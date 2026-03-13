@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>沈阳桁睿</title>
+    <title>韭韭归一</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         * {
@@ -173,7 +173,7 @@
 </head>
 <body>
     <div class="card">
-        <h1>稳行无忧</h1>
+        <h1>韭韭归一</h1>
         <p class="subtitle">请输入密码以解锁控制</p>
 
         <div id="status" class="status-bar status-idle">
@@ -188,23 +188,23 @@
         <div id="controlGrid" style="display: none;">
             <div class="grid-container">
                 <div class="switch-btn bg-1 off" data-state="off" data-index="1" onclick="toggleSwitch(1)">
-                    <span><i class="fas fa-power-off"></i> 剪式伸缩机构运行</span>
+                    <span><i class="fas fa-power-off"></i> 步进电机1正运行</span>
                     <div class="state-text">OFF</div>
                 </div>
                 <div class="switch-btn bg-2 off" data-state="off" data-index="2" onclick="toggleSwitch(2)">
-                    <span><i class="fas fa-power-off"></i> 折叠渡板展开</span>
+                    <span><i class="fas fa-power-off"></i> 步进电机1反运行</span>
                     <div class="state-text">OFF</div>
                 </div>
                 <div class="switch-btn bg-3 off" data-state="off" data-index="3" onclick="toggleSwitch(3)">
-                    <span><i class="fas fa-power-off"></i> 折叠渡板收回</span>
+                    <span><i class="fas fa-power-off"></i> 直流电机1运行</span>
                     <div class="state-text">OFF</div>
                 </div>
                 <div class="switch-btn bg-4 off" data-state="off" data-index="4" onclick="toggleSwitch(4)">
-                    <span><i class="fas fa-power-off"></i> 折叠渡板俯仰</span>
+                    <span><i class="fas fa-power-off"></i> 舵机1正运行</span>
                     <div class="state-text">OFF</div>
                 </div>
                 <div class="switch-btn bg-5 off" data-state="off" data-index="5" onclick="toggleSwitch(5)">
-                    <span><i class="fas fa-power-off"></i> 智能助力装置</span>
+                    <span><i class="fas fa-power-off"></i> 舵机1反运行</span>
                     <div class="state-text">OFF</div>
                 </div>
                 <div class="switch-btn bg-6 off" data-state="off" data-index="6" onclick="toggleSwitch(6)">
@@ -221,7 +221,7 @@
     </div>
 
     <script>
-        const PASSWORD = "syhr";
+        const PASSWORD = "050910Crn!"; // 预设密码
         const CONFIG = {
             uid: "6a51cf8f297040f9b8551ebee8020c1c",
             topic: "machine006",
@@ -340,3 +340,6 @@
     </script>
 </body>
 </html>
+<!-- 更新网站：以后修改了网页内容，只需要在 VSCode 中保存文件，
+ 然后重复第 3 步中的 git add .、git commit 和 git push 命令，
+ GitHub Pages 就会自动更新你的网站。 -->
