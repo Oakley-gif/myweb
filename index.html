@@ -230,7 +230,6 @@
         .module-btn.bg-4 { background: linear-gradient(135deg, #6d6fc7, #504d9e); }
         .module-btn.bg-5 { background: linear-gradient(135deg, #de9036, #b86e28); }
         .module-btn.bg-6 { background: linear-gradient(135deg, #319795, #237a78); }
-        .module-btn.bg-7 { background: linear-gradient(135deg, #cc5a6e, #ad3f53); }
 
         /* OFF状态：统一高级灰，完全满足“按钮变成OFF时，颜色变灰” */
         .module-btn.off {
@@ -307,7 +306,7 @@
     <h1>韭韭归一</h1>
     <p class="subtitle">· 智控中枢 · 密码解锁</p>
 
-    
+    <!-- 状态信息栏 -->
     <div id="status" class="status-bar status-idle">
         等待指令...
     </div>
@@ -315,10 +314,10 @@
         未接收到消息
     </div>
 
-    <!-- 控制面板：七个设备模块（完全移除图标，保留文字+科技感布局） -->
+    <!-- 控制面板：6个设备模块（已移除紧急停止模块） -->
     <div id="controlGrid" style="display: none;" class="grid-container">
 
-        <!-- 模块1： 多轴联动 -->
+        <!-- 模块1：多轴联动 -->
         <div class="control-module">
             <div class="slider-section">
                 <input type="range" min="0" max="100" value="0" class="slider" id="slider-1" oninput="updateSlider(1)" disabled>
@@ -330,7 +329,7 @@
             </button>
         </div>
 
-        <!-- 模块2 八连杆工作台 -->
+        <!-- 模块2：八连杆工作台 -->
         <div class="control-module">
             <div class="slider-section">
                 <input type="range" min="0" max="100" value="0" class="slider" id="slider-2" oninput="updateSlider(2)" disabled>
@@ -342,7 +341,7 @@
             </button>
         </div>
 
-        <!-- 模块3：直流电机 / 风刀去土 -->
+        <!-- 模块3：风刀去土 -->
         <div class="control-module">
             <div class="slider-section">
                 <input type="range" min="0" max="100" value="0" class="slider" id="slider-3" oninput="updateSlider(3)" disabled>
@@ -354,7 +353,7 @@
             </button>
         </div>
 
-        <!-- 模块4：舵机1 / 视觉模块 -->
+        <!-- 模块4：视觉模块 -->
         <div class="control-module">
             <div class="slider-section">
                 <input type="range" min="0" max="100" value="0" class="slider" id="slider-4" oninput="updateSlider(4)" disabled>
@@ -366,7 +365,7 @@
             </button>
         </div>
 
-        <!-- 模块5：舵机2 / 打捆机构 -->
+        <!-- 模块5：打捆机构 -->
         <div class="control-module">
             <div class="slider-section">
                 <input type="range" min="0" max="100" value="0" class="slider" id="slider-5" oninput="updateSlider(5)" disabled>
@@ -389,22 +388,9 @@
                 <span class="state-text" id="state-6">OFF</span>
             </button>
         </div>
-
-        <!-- 模块7：紧急停止（调光灯光逻辑保留为紧急停止控制） -->
-        <div class="control-module">
-            <div class="slider-section">
-                <input type="range" min="0" max="100" value="0" class="slider" id="slider-7" oninput="updateSlider(7)" disabled>
-                <span class="val-display" id="val-7">0</span>
-            </div>
-            <button class="module-btn bg-7 off" data-index="7" onclick="toggleDevice(7)">
-                紧急停止
-                <span class="state-text" id="state-7">OFF</span>
-            </button>
-        </div>
-
     </div>
 
-    
+    <!-- 密码解锁区 -->
     <div class="password-container" id="pwdContainer">
         <input type="password" id="pwdInput" class="password-input" placeholder="输入安全密码">
         <button class="unlock-btn" onclick="checkPassword()">🔓 解锁面板</button>
@@ -422,7 +408,6 @@
     };
 
     // ---------- 辅助函数：更新云端状态显示（轮询获取最新指令回显）----------
-    // 通过巴法云 REST API 拉取当前设备最新消息，展示在接收状态栏（纯文本无图标）
     async function pollUpdates() {
         const recvEl = document.getElementById('recv');
         recvEl.style.display = 'block';
@@ -432,7 +417,7 @@
             const data = await response.json();
             if (data.code === 0 && data.data && data.data.length > 0) {
                 const realMsg = data.data[0].msg;
-                recvEl.innerHTML = `📡 当前状态: ${realMsg}`;   // 仅文本 + 简单emoji(无害，非图形库)
+                recvEl.innerHTML = `📡 当前状态: ${realMsg}`;
                 recvEl.className = 'status-bar status-success';
             } else {
                 recvEl.innerHTML = `⏳ 当前状态: 无数据`;
@@ -445,10 +430,8 @@
     }
 
     // ---------- 核心指令发送模块 (巴法云API) ----------
-    // 发送控制命令至云端，并更新顶部状态栏（移除了所有 fontawesome 图标）
     async function sendCommand(msg, desc) {
         const statusEl = document.getElementById('status');
-        // 显示“发送中”状态（纯文本模拟动态效果）
         statusEl.innerHTML = `⟳ 发送中: ${desc}`;
         statusEl.className = 'status-bar status-idle';
         
@@ -469,7 +452,6 @@
             if (result.code === 0) {
                 statusEl.innerHTML = `✔ 成功: ${desc}`;
                 statusEl.className = 'status-bar status-success';
-                // 发送成功后刷新接收缓冲区，获取最新云端消息
                 pollUpdates();
             } else {
                 throw new Error(result.message || "云端返回失败码");
@@ -481,59 +463,46 @@
     }
 
     // ---------- 设备开关控制 ----------
-    // 功能：切换设备 ON / OFF，改变按钮样式(off灰色)、滑块禁用状态，并发送对应指令
     function toggleDevice(index) {
         const btn = document.querySelector(`.module-btn[data-index="${index}"]`);
         const stateText = document.getElementById(`state-${index}`);
         const slider = document.getElementById(`slider-${index}`);
         const currentValue = slider.value;
 
-        // 当前为 OFF 状态 -> 需要开启设备
         if (btn.classList.contains('off')) {
-            // 开启设备：移除灰色样式，启用滑块，状态文本变为 ON
             btn.classList.remove('off');
             stateText.textContent = 'ON';
             slider.disabled = false;
-            // 发送指令：格式 M{索引}_{数值} ，例如 M1_50
             sendCommand(`M${index}_${currentValue}`, `设备${index} 开启 (数值:${currentValue})`);
-        } 
-        // 当前为 ON 状态 -> 关闭设备
-        else {
-            btn.classList.add('off');          // 按钮变灰（满足需求1）
+        } else {
+            btn.classList.add('off');
             stateText.textContent = 'OFF';
-            slider.disabled = true;            // 滑块禁用
-            // 关闭设备时数值归零发送 M{index}_0，保证安全状态
+            slider.disabled = true;
             sendCommand(`M${index}_0`, `设备${index} 已关闭`);
         }
     }
 
     // ---------- 滑块调节 ----------
-    // 实时更新数值显示，当设备为ON状态时发送调节指令到云端
     function updateSlider(index) {
         const slider = document.getElementById(`slider-${index}`);
         const valDisplay = document.getElementById(`val-${index}`);
         const value = parseInt(slider.value);
-        valDisplay.textContent = value;    // 更新数值标签
+        valDisplay.textContent = value;
         
         const btn = document.querySelector(`.module-btn[data-index="${index}"]`);
-        // 只有当设备处于开启状态(非off)才发送调节指令，防止误触发
         if (!btn.classList.contains('off')) {
             sendCommand(`M${index}_${value}`, `设备${index} 调节至 ${value}`);
         }
     }
 
     // ---------- 密码验证与面板解锁 ----------
-    // 验证密码正确后，展示控制面板，隐藏密码框区域
     function checkPassword() {
         const pwdInput = document.getElementById('pwdInput');
         if (pwdInput.value === PASSWORD) {
-            // 解锁成功：隐藏密码容器，显示控制网格
             document.getElementById('pwdContainer').style.display = 'none';
             const grid = document.getElementById('controlGrid');
-            grid.style.display = 'flex';     // 垂直flex布局展现所有模块
-            // 解锁后立即拉取一次云端最新状态，便于展示历史遗留指令
+            grid.style.display = 'flex';
             pollUpdates();
-            // 顶部状态提示解锁成功（无图标纯文本）
             const statusEl = document.getElementById('status');
             statusEl.innerHTML = '🔓 已解锁 · 可控制设备';
             statusEl.className = 'status-bar status-success';
@@ -543,17 +512,15 @@
                 }
             }, 2000);
         } else {
-            // 密码错误反馈（简约无图案alert）
             alert('访问拒绝：密码错误');
             pwdInput.value = '';
             pwdInput.focus();
         }
     }
 
-    // ---------- 额外辅助：滑块初始化数值同步显示 ----------
-    // 确保每个滑块的初始显示值正确 (已经由HTML默认0，但保障二次绑定)
+    // ---------- 初始化滑块显示 (1~6) ----------
     function initSlidersDisplay() {
-        for (let i = 1; i <= 7; i++) {
+        for (let i = 1; i <= 6; i++) {
             const slider = document.getElementById(`slider-${i}`);
             const valSpan = document.getElementById(`val-${i}`);
             if (slider && valSpan) {
@@ -562,46 +529,28 @@
         }
     }
 
-    // 页面启动调用初始化函数
     initSlidersDisplay();
 
-    // 注：pollUpdates 会在每次发送成功后自动拉取，同时解锁后调用一次，
-    // 为了保证实时性，也可以周期性轮询（但不频繁请求，按需即可）
-    // 为避免过多请求，解锁后每隔15秒自动获取一次状态（增加体验但不过载）
+    // ---------- 自动轮询（解锁后启动）----------
     let pollingInterval = null;
     function startAutoPolling() {
         if (pollingInterval) clearInterval(pollingInterval);
         pollingInterval = setInterval(() => {
-            // 只有控制面板显示可见时（已解锁）才拉取，避免无效请求
             const grid = document.getElementById('controlGrid');
             if (grid && grid.style.display === 'flex') {
                 pollUpdates();
             }
-        }, 18000);  // 18秒轮询一次，温和刷新
+        }, 18000);
     }
-    // 重写原 checkPassword 保留自动轮询启动 (扩展解锁后自动轮询)
+
+    // 重写 checkPassword 以支持自动轮询
     const originalCheck = checkPassword;
     window.checkPassword = function() {
         originalCheck();
-        // 若密码验证成功后开启轮询 (仅启动一次)
         if (document.getElementById('pwdContainer').style.display === 'none') {
             startAutoPolling();
         }
     };
-    // 为避免冲突，确保页面加载后没有轮询，只有解锁才会开启
-    // 同时保证如果已经解锁情况下刷新？但没有持久登录，默认锁定状态安全。
-    
-    // 附加说明：为防止用户在未解锁时误触发送函数，按钮点击事件会在密码解锁前不可见，无需额外防护。
-    // 所有交互均依赖DOM解锁展示后启用，安全可靠。
-
-    // 优化触摸/移动端点击无延迟（已满足）
-    // 移除所有图形库和icon依赖，确保完全符合简约但色彩科技风格。
-    // 按钮OFF状态class .off 已配置灰色渐变，完全符合需求1。
-    // 需求2：图形库已彻底移除，无任何fontawesome或第三方图案，配色深邃+霓虹点缀，科技感排列整齐。
-    // 需求3：详细注释覆盖所有关键逻辑，便于修改扩展。
 </script>
 </body>
 </html>
-<!-- 更新网站：以后修改了网页内容，只需要在 VSCode 中保存文件，
- 然后重复第 3 步中的 git add .、git commit 和 git push 命令，
- GitHub Pages 就会自动更新你的网站。 -->
